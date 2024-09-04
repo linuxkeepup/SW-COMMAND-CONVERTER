@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco to Juniper Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Cisco to Juniper Converter</h2>
+
+<label for="ciscoConfig">Enter Cisco Configuration:</label>
+<textarea id="ciscoConfig"></textarea>
+
+<label for="juniperConfig">Enter Juniper Configuration:</label>
+<textarea id="juniperConfig"></textarea>
+
+<button onclick="convertToJuniper()">Convert to Juniper</button>
+<button onclick="convertToCisco()">Convert to Cisco</button>
+<button onclick="resetFields()">Reset</button>
+
+<script>
+    function convertToJuniper() {
+        const ciscoConfig = document.getElementById('ciscoConfig').value;
+        let juniperConfig = '';
+
+        const lines = ciscoConfig.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('vlan')) {
+                const vlanId = lines[i].split(' ')[1];
+                const vlanName = lines[i + 1].split(' ')[1];
+                juniperConfig += `set vlans ${vlanName} vlan-id ${vlanId}\n`;
+                i++; // Skip the next line (name line)
+            }
+        }
+
+        document.getElementById('juniperConfig').value = juniperConfig;
+    }
+
+    function convertToCisco() {
+        const juniperConfig = document.getElementById('juniperConfig').value;
+        let ciscoConfig = '';
+
+        const lines = juniperConfig.split('\n');
+        for (let line of lines) {
+            line = line.trim(); // Remove leading/trailing spaces
+            if (line.startsWith('set vlans')) {
+                const parts = line.split(' ');
+                if (parts.length >= 5) {
+                    const vlanName = parts[2];
+                    const vlanId = parts[4];
+                    ciscoConfig += `vlan ${vlanId}\n`;
+                    ciscoConfig += `name ${vlanName}\n`;
+                }
+            }
+        }
+
+        document.getElementById('ciscoConfig').value = ciscoConfig;
+    }
+
+    function resetFields() {
+        document.getElementById('ciscoConfig').value = '';
+        document.getElementById('juniperConfig').value = '';
+    }
+</script>
+
+</body>
+</html>
